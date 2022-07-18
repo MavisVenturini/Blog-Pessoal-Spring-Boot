@@ -1,6 +1,7 @@
 package com.generation.crudblogpessoal.controller;
 
 import java.util.List;
+import java.util.Optional;
 
 import javax.validation.Valid;
 
@@ -15,7 +16,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.generation.crudblogpessoal.model.Tema;
 import com.generation.crudblogpessoal.repository.TemaRepository;
@@ -37,37 +40,32 @@ public class TemaController {
 	public ResponseEntity<Tema> getById(@PathVariable Long id){
 		return temarepository.findById(id)
 				.map(resp -> ResponseEntity.ok(resp))
-				.orElse(ResponseEntity.notFound().build());
+				.orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
 	}
 	@GetMapping("/descricao/{descricao}")
-	public ResponseEntity<List<Tema>> getByName(@PathVariable String descricao){
+	public ResponseEntity<List<Tema>> getByTitle(@PathVariable String descricao){
 		return ResponseEntity.ok(temarepository.findAllByDescricaoContainingIgnoreCase(descricao));
 	}
 	@PostMapping
-	public ResponseEntity<Tema> postTema(@RequestBody Tema tema){
+	public ResponseEntity<Tema> postTema(@Valid @RequestBody Tema tema){
 		return ResponseEntity.status(HttpStatus.CREATED)
 				.body(temarepository.save(tema));
 	}
 	@PutMapping
-	
 	public ResponseEntity<Tema> putTema(@Valid @RequestBody Tema tema) {
-		
-	return temarepository.findById(tema.getId())
-			.map(resposta -> {
-				return ResponseEntity.ok().body(temarepository.save(tema));
-			})
-			.orElse(ResponseEntity.notFound().build());
+		return temarepository.findById(tema.getId())
+				.map(resp -> ResponseEntity.status(HttpStatus.CREATED).body(temarepository.save(tema)))
+				.orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
 
 }
+	@ResponseStatus(HttpStatus.NO_CONTENT)
 	@DeleteMapping("/{id}")
-	
-    public ResponseEntity<?> deleteTema(@PathVariable Long id) {
+	public void delete(@PathVariable Long id) {
+		Optional<Tema> tema = temarepository.findById(id);
 		
-		return temarepository.findById(id)
-				.map(resposta -> {
-					temarepository.deleteById(id);
-					return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-				})
-				.orElse(ResponseEntity.notFound().build());
+		if(tema.isEmpty())
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+		
+		temarepository.deleteById(id);
 	}
 }

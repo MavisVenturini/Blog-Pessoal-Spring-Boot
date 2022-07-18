@@ -1,14 +1,13 @@
 package com.generation.crudblogpessoal.model;
 
-import java.util.Date;
-
+import java.time.LocalDateTime;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-import javax.validation.constraints.NotNull;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 
 import org.hibernate.annotations.UpdateTimestamp;
@@ -23,20 +22,24 @@ public class Postagem{
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	private Long id;
 	
-	@NotNull
-	@Size(min=5,max=100,message="O campo deve ter no minimo 5 letras e no maximo 100")
+	@NotBlank(message = "O atributo título é Obrigatório!") 
+	@Size(min = 5, max = 100, message = "O atributo título deve conter no mínimo 05 e no máximo 100 caracteres")
 	private String titulo;
 	
-	@NotNull
-	@Size(min=10,max=500)
+	@NotBlank(message = "O atributo texto é Obrigatório!")
+	@Size(min = 10, max = 1000, message = "O atributo texto deve conter no mínimo 10 e no máximo 1000 caracteres")
 	private String texto;
 	
 	@UpdateTimestamp
-	private Date data;
+	private LocalDateTime data;
 
-	@ManyToOne
+    @ManyToOne
 	@JsonIgnoreProperties("postagem")
 	private Tema tema;
+
+    @ManyToOne
+	@JsonIgnoreProperties("postagem")
+	private Usuario usuario;
 	
 	public Tema getTema() {
 		return tema;
@@ -78,12 +81,11 @@ public class Postagem{
 	}
 
 
-	public Date getData(){
-		return data;
-	}
+	public LocalDateTime getData() {
+        return this.data;
+    }
 
-
-	public void setData(Date data){
-		this.data = data;
-	}
+    public void setData(LocalDateTime data) {
+        this.data = data;
+    }
 }
